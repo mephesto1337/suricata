@@ -782,9 +782,9 @@ static TmEcode UnixSocketSetOSInfo(json_t *cmd,
     json_object_set_new(answer, "message", json_string("OK"));
     return TM_ECODE_OK;
 
-    error:
+error:
 
-    SCLogInfo("error: %s", errmsg);
+    SCLogError("error: %s", errmsg);
     json_object_set_new(answer, "message", json_string(errmsg));
     SCReturnInt(TM_ECODE_FAILED);
 }
