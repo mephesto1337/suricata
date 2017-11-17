@@ -762,13 +762,13 @@ static TmEcode UnixSocketSetOSInfo(json_t *cmd,
         ipv6 = json_string_value(jarg);
     }
 
-    if ( ipv4 ) {
+    if (ipv4) {
         SCLogInfo("Set host %s to OS %s", ipv4, ostype);
         if (SCHInfoAddHostOSInfo(ostype, ipv4, 1) < 0) {
             errmsg = "SCHInfoAddHostOSInfo failed";
             goto error;
         }
-    } else if ( ipv6 ) {
+    } else if (ipv6) {
         SCLogInfo("Set host [%s] to OS %s", ipv6, ostype);
         if (SCHInfoAddHostOSInfo(ostype, ipv6, 0) < 0) {
             errmsg = "SCHInfoAddHostOSInfo failed";
