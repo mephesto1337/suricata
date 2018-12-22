@@ -92,7 +92,7 @@ void hexdump(/*Flow *f,*/ const void *buf, size_t len)
     unsigned char c;
     size_t n;
     char bytestr[4] = {0};
-    char addrstr[10] = {0};
+    char addrstr[17] = {0};
     char hexstr[ 16*3 + 5] = {0};
     char charstr[16*1 + 5] = {0};
     for (n=1; n<=len; n++) {
@@ -1922,7 +1922,7 @@ static int DCERPCParse(Flow *f, void *dcerpc_state,
 static int DCERPCParseRequest(Flow *f, void *dcerpc_state,
                               AppLayerParserState *pstate,
                               uint8_t *input, uint32_t input_len,
-                              void *local_data)
+                              void *local_data, const uint8_t flags)
 {
     return DCERPCParse(f, dcerpc_state, pstate, input, input_len,
                        local_data, 0);
@@ -1931,7 +1931,7 @@ static int DCERPCParseRequest(Flow *f, void *dcerpc_state,
 static int DCERPCParseResponse(Flow *f, void *dcerpc_state,
                                AppLayerParserState *pstate,
                                uint8_t *input, uint32_t input_len,
-                               void *local_data)
+                               void *local_data, const uint8_t flags)
 {
     return DCERPCParse(f, dcerpc_state, pstate, input, input_len,
                        local_data, 1);
@@ -1999,17 +1999,9 @@ static void DCERPCStateFree(void *s)
     SCFree(s);
 }
 
-static int DCERPCStateHasTxDetectState(void *state)
+static int DCERPCSetTxDetectState(void *vtx, DetectEngineState *de_state)
 {
-    DCERPCState *dce_state = (DCERPCState *)state;
-    if (dce_state->de_state)
-        return 1;
-    return 0;
-}
-
-static int DCERPCSetTxDetectState(void *state, void *vtx, DetectEngineState *de_state)
-{
-    DCERPCState *dce_state = (DCERPCState *)state;
+    DCERPCState *dce_state = (DCERPCState *)vtx;
     dce_state->de_state = de_state;
     return 0;
 }
@@ -2089,7 +2081,7 @@ void RegisterDCERPCParsers(void)
 
         AppLayerParserRegisterTxFreeFunc(IPPROTO_TCP, ALPROTO_DCERPC, DCERPCStateTransactionFree);
 
-        AppLayerParserRegisterDetectStateFuncs(IPPROTO_TCP, ALPROTO_DCERPC, DCERPCStateHasTxDetectState,
+        AppLayerParserRegisterDetectStateFuncs(IPPROTO_TCP, ALPROTO_DCERPC,
                                                DCERPCGetTxDetectState, DCERPCSetTxDetectState);
 
         AppLayerParserRegisterGetTx(IPPROTO_TCP, ALPROTO_DCERPC, DCERPCGetTx);

@@ -525,8 +525,10 @@ static SCRadixNode *SCRadixAddKey(uint8_t *key_stream, uint16_t key_bitlen,
             return NULL;
         }
         node = SCRadixCreateNode();
-        if (node == NULL)
+        if (node == NULL) {
+            SCRadixReleasePrefix(prefix, tree);
             return NULL;
+        }
         node->prefix = prefix;
         node->bit = prefix->bitlen;
         tree->head = node;
@@ -750,6 +752,8 @@ static SCRadixNode *SCRadixAddKey(uint8_t *key_stream, uint16_t key_bitlen,
                 if ( (inter_node->netmasks = SCMalloc((node->netmask_cnt - i) *
                                 sizeof(uint8_t))) == NULL) {
                     SCLogError(SC_ERR_MEM_ALLOC, "Fatal error encountered in SCRadixAddKey. Mem not allocated...");
+                    SCRadixReleaseNode(inter_node, tree);
+                    SCRadixReleaseNode(new_node, tree);
                     return NULL;
                 }
 
@@ -1190,7 +1194,7 @@ static void SCRadixRemoveKey(uint8_t *key_stream, uint16_t key_bitlen,
     /* we are deleting the root of the tree.  This would be the only node left
      * in the tree */
     if (tree->head == node) {
-        SCFree(node);
+        SCRadixReleaseNode(node, tree);
         tree->head = NULL;
         SCRadixReleasePrefix(prefix, tree);
         return;
